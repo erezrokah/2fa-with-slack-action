@@ -1,0 +1,9 @@
+name: '2fa-with-slack-action'
+description: 'A GitHub Action to publish a package with 2FA authentication using Slack'
+author: erezrokah
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+branding:
+  icon: layers
+  color: blue

@@ -1,0 +1,10 @@
+# package directories
+node_modules
+
+coverage
+
+yarn-error.log
+
+.env
+
+index.js

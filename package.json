@@ -1,0 +1,54 @@
+{
+  "name": "2fa-with-slack-action",
+  "version": "1.0.0",
+  "description": "A GitHub Action to publish a package with 2FA authentication using Slack",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erezrokah/2fa-with-slack-action.git"
+  },
+  "keywords": [],
+  "author": "Erez Rokah",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/erezrokah/2fa-with-slack-action/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint 'src/**/*.ts'",
+    "start": "node index.js",
+    "develop": "NODE_ENV=development ts-node src/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "coverage": "jest --coverage",
+    "prettier": "prettier --write src/**/*.ts",
+    "prettier:ci": "prettier --list-different src/**/*.ts"
+  },
+  "homepage": "https://github.com/erezrokah/2fa-with-slack-action#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@types/jest": "^25.1.1",
+    "@types/node": "^13.1.7",
+    "@typescript-eslint/eslint-plugin": "^2.19.0",
+    "@typescript-eslint/parser": "^2.19.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "husky": "^4.2.1",
+    "jest": "^25.1.0",
+    "prettier": "^1.19.1",
+    "ts-jest": "^25.2.0",
+    "ts-loader": "^6.2.1",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.7.5"
+  },
+  "private": true,
+  "dependencies": {
+    "@actions/core": "^1.2.2",
+    "@actions/github": "^2.1.0",
+    "@slack/web-api": "^5.7.0",
+    "dotenv": "^8.2.0",
+    "node-pty": "^0.9.0"
+  }
+}

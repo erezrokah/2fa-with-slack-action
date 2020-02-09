@@ -1,0 +1,16 @@
+{
+  "extends": [
+    "config:base",
+    "schedule:weekly"
+  ],
+  "rangeStrategy": "update-lockfile",
+  "automerge": true,
+  "labels": ["renovate"],
+  "major": {
+    "automerge": false
+  },
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "semanticCommits": true
+}
