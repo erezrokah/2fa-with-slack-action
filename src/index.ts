@@ -165,6 +165,7 @@ const setupAuth = async () => {
         resolve({ error });
       };
 
+      let matched2fa = false;
       let muteOutput = false;
       let unmuteMessage = '';
       let currentMessage = '';
@@ -177,9 +178,10 @@ const setupAuth = async () => {
         } else {
           currentMessage = `${currentMessage}${data}`;
         }
-        if (regex.test(data.toString())) {
+        if (!matched2fa && regex.test(data.toString())) {
           try {
             console.log(`Matched 2FA code pattern ${regex.toString()}`);
+            matched2fa = true;
             const web = new WebClient(token);
             const { user, ts } = await request2FACode(web, conversationId);
             const { error, code } = await waitFor2FACode(
