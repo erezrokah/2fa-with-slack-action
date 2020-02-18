@@ -64,6 +64,40 @@ const request2FACode = async (web: WebClient, conversationId: string) => {
   return { user, ts: ts as string };
 };
 
+const acknowledge2FACode = async (
+  web: WebClient,
+  conversationId: string,
+  code: string,
+) => {
+  try {
+    console.log('Sending acknowledge message');
+    await web.chat.postMessage({
+      channel: conversationId,
+      text: `Received 2FA code ${code}`,
+    });
+    console.log('Done sending acknowledge message');
+  } catch (e) {
+    console.log('Failed sending acknowledge message');
+  }
+};
+
+const reportExitMessage = async (
+  web: WebClient,
+  conversationId: string,
+  message: string,
+) => {
+  try {
+    console.log('Sending exit message');
+    await web.chat.postMessage({
+      channel: conversationId,
+      text: message,
+    });
+    console.log('Done sending exit message');
+  } catch (e) {
+    console.log('Failed sending exit message');
+  }
+};
+
 const getHistory = async (
   web: WebClient,
   conversationId: string,
@@ -148,7 +182,10 @@ const setupAuth = async () => {
 
     await setupAuth();
     const regex = new RegExp(pattern);
-    const { error } = await new Promise(resolve => {
+    const { error, message } = await new Promise<{
+      error: Error | null;
+      message?: string;
+    }>(resolve => {
       const publishProcess = pty.spawn(command, args, {});
       const timeoutId = setTimeout(() => {
         publishProcess.kill();
@@ -194,6 +231,7 @@ const setupAuth = async () => {
             if (error) {
               handleError(error);
             } else {
+              await acknowledge2FACode(web, conversationId, code);
               console.log(`Sending 2FA code to publish command`);
               muteOutput = true;
               unmuteMessage = code;
@@ -206,23 +244,31 @@ const setupAuth = async () => {
       };
 
       publishProcess.on('data', dataHandler);
-      publishProcess.on('exit', code => {
+      publishProcess.on('exit', async code => {
+        const message = `Publish command process exited with exit code '${code}'`;
         if (code !== 0) {
-          handleError(
-            new Error(
-              `Publish command process exited with error code '${code}'`,
-            ),
-          );
+          handleError(new Error(message));
         } else {
           clearTimeout(timeoutId);
-          resolve({ error: null });
+          resolve({ error: null, message });
         }
       });
     });
 
     if (error) {
+      await reportExitMessage(
+        new WebClient(token),
+        conversationId,
+        error.message,
+      );
       core.setFailed(error.message);
     }
+
+    await reportExitMessage(
+      new WebClient(token),
+      conversationId,
+      error?.message || message || 'Done running publish command',
+    );
   } catch (error) {
     core.setFailed(error.message);
   }
