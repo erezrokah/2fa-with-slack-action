@@ -244,7 +244,7 @@ const setupAuth = async () => {
       };
 
       publishProcess.on('data', dataHandler);
-      publishProcess.on('exit', async code => {
+      publishProcess.on('exit', code => {
         const message = `Publish command process exited with exit code '${code}'`;
         if (code !== 0) {
           handleError(new Error(message));
