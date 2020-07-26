@@ -1,6 +1,6 @@
 {
   "name": "2fa-with-slack-action",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A GitHub Action to publish a package with 2FA authentication using Slack",
   "main": "dist/index.js",
   "repository": {
