@@ -18,36 +18,39 @@
     "lint": "eslint 'src/**/*.ts'",
     "start": "node index.js",
     "develop": "NODE_ENV=development ts-node src/index.ts",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "coverage": "jest --coverage",
-    "prettier": "prettier --write src/**/*.ts",
-    "prettier:ci": "prettier --list-different src/**/*.ts"
+    "format": "prettier --write src/**/*.ts",
+    "format:ci": "prettier --list-different src/**/*.ts",
+    "version": "auto-changelog -p --template keepachangelog && git add .",
+    "release": "git push && git push --tags && gh-release"
   },
   "homepage": "https://github.com/erezrokah/2fa-with-slack-action#readme",
   "devDependencies": {
     "@commitlint/cli": "^9.0.0",
     "@commitlint/config-conventional": "^9.0.0",
-    "@types/jest": "^26.0.0",
-    "@types/node": "^13.1.7",
-    "@typescript-eslint/eslint-plugin": "^3.0.0",
-    "@typescript-eslint/parser": "^3.0.0",
+    "@types/jest": "^26.0.7",
+    "@types/node": "^14.0.26",
+    "@typescript-eslint/eslint-plugin": "^3.7.0",
+    "@typescript-eslint/parser": "^3.7.0",
+    "auto-changelog": "^2.2.0",
     "eslint": "^7.0.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
+    "gh-release": "^3.5.0",
     "husky": "^4.2.1",
-    "jest": "^26.0.0",
     "prettier": "^2.0.0",
-    "ts-jest": "^26.0.0",
-    "ts-loader": "^8.0.0",
     "ts-node": "^8.6.2",
     "typescript": "^3.7.5"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
   },
   "private": true,
   "dependencies": {
     "@actions/core": "^1.2.2",
     "@actions/github": "^4.0.0",
-    "@slack/web-api": "^5.7.0",
+    "@slack/web-api": "^5.11.0",
     "dotenv": "^8.2.0",
     "node-pty": "^0.9.0"
   }
