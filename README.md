@@ -11,7 +11,7 @@ jobs:
     name: Publish an NPM Package
     steps:
       - name: 2FA Publish step
-        uses: erezrokah/2fa-with-slack-action@v1.0.0
+        uses: erezrokah/2fa-with-slack-action@v1
         env:
           # npm token with publish permissions
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
