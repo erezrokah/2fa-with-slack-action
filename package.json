@@ -1,6 +1,6 @@
 {
   "name": "2fa-with-slack-action",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A GitHub Action to publish a package with 2FA authentication using Slack",
   "main": "dist/index.js",
   "repository": {
@@ -20,8 +20,11 @@
     "develop": "NODE_ENV=development ts-node src/index.ts",
     "format": "prettier --write src/**/*.ts",
     "format:ci": "prettier --list-different src/**/*.ts",
-    "version": "auto-changelog -p --template keepachangelog && git add .",
-    "release": "git push && git push --tags && gh-release"
+    "preversion": "npm test",
+    "version-dockerfile": "sed -i '' 's/\"version\"=\".*\"/\"version\"=\"'$npm_package_version'\"/' Dockerfile",
+    "version": "auto-changelog -p --template keepachangelog && npm run version-dockerfile && git add .",
+    "postversion": "git push && git push --tags && gh-release",
+    "test": "run-p lint format:ci"
   },
   "homepage": "https://github.com/erezrokah/2fa-with-slack-action#readme",
   "devDependencies": {
@@ -37,6 +40,7 @@
     "eslint-plugin-prettier": "^3.1.2",
     "gh-release": "^3.5.0",
     "husky": "^4.2.1",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.0.0",
     "ts-node": "^8.6.2",
     "typescript": "^3.7.5"
