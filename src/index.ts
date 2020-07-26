@@ -29,7 +29,6 @@ REQUIRED_ENV.forEach((key) => {
 const getInputs = () => {
   const {
     SLACK_TOKEN = '',
-    CONVERSATION_ID = '',
     CHANNEL_ID = '',
     PUBLISH_COMMAND = '',
     CODE_PATTERN = '',
@@ -44,9 +43,7 @@ const getInputs = () => {
   );
   return {
     token: SLACK_TOKEN,
-    // CONVERSATION_ID is here for backwards compatibility
-    // https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
-    channelId: CHANNEL_ID || CONVERSATION_ID,
+    channelId: CHANNEL_ID,
     command,
     args,
     pattern: CODE_PATTERN,
