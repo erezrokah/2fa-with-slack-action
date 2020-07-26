@@ -17,8 +17,8 @@ jobs:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
           # slack token with bot scopes of `app_mentions:read,channels:history,channels:join,chat:write` and `groups.history` for private channel access
           SLACK_TOKEN: ${{secrets.SLACK_TOKEN}}
-          # conversation id of slack channel to send the 2FA request message
-          CONVERSATION_ID: ${{secrets.CONVERSATION_ID}}
+          # channel id of slack channel to send the 2FA request message
+          CHANNEL_ID: ${{secrets.CHANNEL_ID}}
           # line break separated list of command and args that perform the publish
           PUBLISH_COMMAND: "npm\npublish"
           # pattern to match on publish command output when token is needed

@@ -10,11 +10,11 @@ config();
 
 const REQUIRED_ENV = [
   'SLACK_TOKEN',
-  'CONVERSATION_ID',
+  'CHANNEL_ID',
   'PUBLISH_COMMAND',
   'CODE_PATTERN',
 ];
-REQUIRED_ENV.forEach(key => {
+REQUIRED_ENV.forEach((key) => {
   const missing = [];
   if (!process.env[key]) {
     missing.push(key);
@@ -30,6 +30,7 @@ const getInputs = () => {
   const {
     SLACK_TOKEN = '',
     CONVERSATION_ID = '',
+    CHANNEL_ID = '',
     PUBLISH_COMMAND = '',
     CODE_PATTERN = '',
     TIMEOUT = `${20 * 60 * 1000}`,
@@ -43,7 +44,9 @@ const getInputs = () => {
   );
   return {
     token: SLACK_TOKEN,
-    conversationId: CONVERSATION_ID,
+    // CONVERSATION_ID is here for backwards compatibility
+    // https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
+    channelId: CHANNEL_ID || CONVERSATION_ID,
     command,
     args,
     pattern: CODE_PATTERN,
@@ -51,11 +54,17 @@ const getInputs = () => {
   };
 };
 
-const request2FACode = async (web: WebClient, conversationId: string) => {
-  console.log(`Requesting 2FA token from channel ${conversationId}`);
-  await web.channels.join({ name: conversationId });
+const request2FACode = async (web: WebClient, channel: string) => {
+  console.log(`Requesting 2FA token from channel ${channel}`);
+  await web.conversations.join({ channel }).catch((e) => {
+    // the following error is expected for private channels
+    if (e.data.error === 'method_not_supported_for_channel_type') {
+      return;
+    }
+    throw e;
+  });
   const res = await web.chat.postMessage({
-    channel: conversationId,
+    channel,
     text: 'Please respond with 2FA code',
   });
   const { message, ts } = res;
@@ -66,13 +75,13 @@ const request2FACode = async (web: WebClient, conversationId: string) => {
 
 const acknowledge2FACode = async (
   web: WebClient,
-  conversationId: string,
+  channel: string,
   code: string,
 ) => {
   try {
     console.log('Sending acknowledge message');
     await web.chat.postMessage({
-      channel: conversationId,
+      channel,
       text: `Received 2FA code ${code}`,
     });
     console.log('Done sending acknowledge message');
@@ -83,13 +92,13 @@ const acknowledge2FACode = async (
 
 const reportExitMessage = async (
   web: WebClient,
-  conversationId: string,
+  channel: string,
   message: string,
 ) => {
   try {
     console.log('Sending exit message');
     await web.chat.postMessage({
-      channel: conversationId,
+      channel,
       text: message,
     });
     console.log('Done sending exit message');
@@ -98,33 +107,18 @@ const reportExitMessage = async (
   }
 };
 
-const getHistory = async (
-  web: WebClient,
-  conversationId: string,
-  ts: string,
-) => {
-  try {
-    // public channels
-    const res = await web.channels.history({
-      channel: conversationId,
-      oldest: ts,
-      inclusive: false,
-    });
-    return res;
-  } catch (e) {
-    // private channels
-    const res = await web.groups.history({
-      channel: conversationId,
-      oldest: ts,
-      inclusive: false,
-    });
-    return res;
-  }
+const getHistory = async (web: WebClient, channel: string, ts: string) => {
+  const res = await web.conversations.history({
+    channel,
+    oldest: ts,
+    inclusive: false,
+  });
+  return res;
 };
 
 const waitFor2FACode = async (
   web: WebClient,
-  conversationId: string,
+  channel: string,
   timeout: number,
   ts: string,
   user: string,
@@ -135,7 +129,7 @@ const waitFor2FACode = async (
   }, timeout);
 
   while (!timedout) {
-    const res = await getHistory(web, conversationId, ts);
+    const res = await getHistory(web, channel, ts);
     const messages = (res.messages as { text: string; type: string }[]).filter(
       ({ type }) => type === 'message',
     );
@@ -149,7 +143,7 @@ const waitFor2FACode = async (
       }
     }
     console.log('Waiting for 2FA code');
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
   return {
@@ -171,21 +165,14 @@ const setupAuth = async () => {
 
 (async () => {
   try {
-    const {
-      token,
-      conversationId,
-      command,
-      args,
-      pattern,
-      timeout,
-    } = getInputs();
+    const { token, channelId, command, args, pattern, timeout } = getInputs();
 
     await setupAuth();
     const regex = new RegExp(pattern);
     const { error, message } = await new Promise<{
       error: Error | null;
       message?: string;
-    }>(resolve => {
+    }>((resolve) => {
       const publishProcess = pty.spawn(command, args, {});
       const timeoutId = setTimeout(() => {
         publishProcess.kill();
@@ -220,10 +207,10 @@ const setupAuth = async () => {
             console.log(`Matched 2FA code pattern ${regex.toString()}`);
             matched2fa = true;
             const web = new WebClient(token);
-            const { user, ts } = await request2FACode(web, conversationId);
+            const { user, ts } = await request2FACode(web, channelId);
             const { error, code } = await waitFor2FACode(
               web,
-              conversationId,
+              channelId,
               timeout / 2,
               ts,
               user,
@@ -231,7 +218,7 @@ const setupAuth = async () => {
             if (error) {
               handleError(error);
             } else {
-              await acknowledge2FACode(web, conversationId, code);
+              await acknowledge2FACode(web, channelId, code);
               console.log(`Sending 2FA code to publish command`);
               muteOutput = true;
               unmuteMessage = code;
@@ -244,7 +231,7 @@ const setupAuth = async () => {
       };
 
       publishProcess.on('data', dataHandler);
-      publishProcess.on('exit', code => {
+      publishProcess.on('exit', (code) => {
         const message = `Publish command process exited with exit code '${code}'`;
         if (code !== 0) {
           handleError(new Error(message));
@@ -256,17 +243,13 @@ const setupAuth = async () => {
     });
 
     if (error) {
-      await reportExitMessage(
-        new WebClient(token),
-        conversationId,
-        error.message,
-      );
+      await reportExitMessage(new WebClient(token), channelId, error.message);
       core.setFailed(error.message);
     }
 
     await reportExitMessage(
       new WebClient(token),
-      conversationId,
+      channelId,
       error?.message || message || 'Done running publish command',
     );
   } catch (error) {
