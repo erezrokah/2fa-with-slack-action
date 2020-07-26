@@ -14,7 +14,7 @@ const REQUIRED_ENV = [
   'PUBLISH_COMMAND',
   'CODE_PATTERN',
 ];
-REQUIRED_ENV.forEach(key => {
+REQUIRED_ENV.forEach((key) => {
   const missing = [];
   if (!process.env[key]) {
     missing.push(key);
@@ -149,7 +149,7 @@ const waitFor2FACode = async (
       }
     }
     console.log('Waiting for 2FA code');
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
   return {
@@ -185,7 +185,7 @@ const setupAuth = async () => {
     const { error, message } = await new Promise<{
       error: Error | null;
       message?: string;
-    }>(resolve => {
+    }>((resolve) => {
       const publishProcess = pty.spawn(command, args, {});
       const timeoutId = setTimeout(() => {
         publishProcess.kill();
@@ -244,7 +244,7 @@ const setupAuth = async () => {
       };
 
       publishProcess.on('data', dataHandler);
-      publishProcess.on('exit', code => {
+      publishProcess.on('exit', (code) => {
         const message = `Publish command process exited with exit code '${code}'`;
         if (code !== 0) {
           handleError(new Error(message));
