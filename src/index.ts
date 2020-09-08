@@ -170,7 +170,9 @@ const setupAuth = async () => {
       error: Error | null;
       message?: string;
     }>((resolve) => {
-      const publishProcess = pty.spawn(command, args, {});
+      const publishProcess = pty.spawn(command, args, {
+        env: process.env as Record<string, string>,
+      });
       const timeoutId = setTimeout(() => {
         publishProcess.kill();
         resolve({
