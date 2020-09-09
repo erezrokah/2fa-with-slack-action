@@ -8,7 +8,7 @@ LABEL "com.github.actions.color"="green"
 LABEL "repository"="https://github.com/erezrokah/2fa-with-slack-action"
 LABEL "homepage"="https://github.com/erezrokah/2fa-with-slack-action"
 LABEL "maintainer"="Erez Rokah"
-LABEL "version"="1.1.0"
+LABEL "version"="1.2.0"
 
 RUN apk add --update bash
 RUN apk add --update python
