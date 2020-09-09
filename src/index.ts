@@ -5,8 +5,12 @@ import pty = require('node-pty');
 import os from 'os';
 import path from 'path';
 import { promises as fs } from 'fs';
+import execa from 'execa';
 
 config();
+
+const millisecondsToMinuets = (milliseconds: number) =>
+  milliseconds / (60 * 1000);
 
 const REQUIRED_ENV = [
   'SLACK_TOKEN',
@@ -26,6 +30,16 @@ REQUIRED_ENV.forEach((key) => {
   }
 });
 
+const parseCommand = (commandString: string) => {
+  const parts = commandString.split('\n');
+  if (parts.length <= 0) {
+    return { command: '', args: [] };
+  }
+  const command = parts[0];
+  const args = parts.slice(1);
+  return { command, args };
+};
+
 const getInputs = () => {
   const {
     SLACK_TOKEN = '',
@@ -33,19 +47,29 @@ const getInputs = () => {
     PUBLISH_COMMAND = '',
     CODE_PATTERN = '',
     TIMEOUT = `${20 * 60 * 1000}`,
+    REVERT_COMMAND = '',
   } = process.env;
 
-  const parts = PUBLISH_COMMAND.split('\n');
-  const command = parts[0];
-  const args = parts.slice(1);
+  const publishCommand = parseCommand(PUBLISH_COMMAND);
   console.log(
-    `Received publish command of '${command}' with args '${args.join(',')}'`,
+    `Received publish command of '${
+      publishCommand.command
+    }' with args '${publishCommand.args.join(',')}'`,
   );
+
+  const revertCommand = parseCommand(REVERT_COMMAND);
+  if (revertCommand.command) {
+    console.log(
+      `Received revert command of '${
+        revertCommand.command
+      }' with args '${revertCommand.args.join(',')}'`,
+    );
+  }
   return {
     token: SLACK_TOKEN,
     channelId: CHANNEL_ID,
-    command,
-    args,
+    publishCommand,
+    revertCommand,
     pattern: CODE_PATTERN,
     timeout: parseInt(TIMEOUT),
   };
@@ -75,15 +99,16 @@ const acknowledge2FACode = async (
   channel: string,
   code: string,
 ) => {
+  const text = `Received 2FA code ${code}`;
   try {
-    console.log('Sending acknowledge message');
+    console.log('Sending acknowledge message:', text);
     await web.chat.postMessage({
       channel,
-      text: `Received 2FA code ${code}`,
+      text,
     });
-    console.log('Done sending acknowledge message');
+    console.log('Done sending acknowledge message:', text);
   } catch (e) {
-    console.log('Failed sending acknowledge message');
+    console.log('Failed sending acknowledge message', text);
   }
 };
 
@@ -93,14 +118,14 @@ const reportExitMessage = async (
   message: string,
 ) => {
   try {
-    console.log('Sending exit message');
+    console.log('Sending exit message:', message);
     await web.chat.postMessage({
       channel,
       text: message,
     });
-    console.log('Done sending exit message');
+    console.log('Done sending exit message:', message);
   } catch (e) {
-    console.log('Failed sending exit message');
+    console.log('Failed sending exit message:', message);
   }
 };
 
@@ -144,7 +169,9 @@ const waitFor2FACode = async (
   }
 
   return {
-    error: new Error(`2FA message timed out after ${timeout} milliseconds`),
+    error: new Error(
+      `2FA message timed out after ${millisecondsToMinuets(timeout)} minuets`,
+    ),
     code: '',
   };
 };
@@ -160,9 +187,54 @@ const setupAuth = async () => {
   }
 };
 
+const revertPublish = async (
+  command: string,
+  args: string[],
+  timeout: number,
+) => {
+  let timeoutId;
+  try {
+    console.log(
+      `Running revert command '${command}' with args '${args.join(',')}'`,
+    );
+
+    const subprocess = execa(command, args, { shell: true });
+    subprocess.stdout?.pipe(process.stdout);
+    subprocess.stderr?.pipe(process.stdout);
+
+    timeoutId = setTimeout(() => {
+      subprocess.cancel();
+    }, timeout);
+
+    await subprocess;
+    console.log('Done running revert command');
+  } catch (error) {
+    if (error.isCanceled) {
+      console.log(
+        `Revert command timed out after '${millisecondsToMinuets(
+          timeout,
+        )}' minuets`,
+      );
+    } else {
+      console.log('Failed running revert command', error);
+    }
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+};
+
 (async () => {
   try {
-    const { token, channelId, command, args, pattern, timeout } = getInputs();
+    const {
+      token,
+      channelId,
+      publishCommand,
+      revertCommand,
+      pattern,
+      timeout,
+    } = getInputs();
 
     await setupAuth();
     const regex = new RegExp(pattern);
@@ -170,6 +242,7 @@ const setupAuth = async () => {
       error: Error | null;
       message?: string;
     }>((resolve) => {
+      const { command, args } = publishCommand;
       const publishProcess = pty.spawn(command, args, {
         env: process.env as Record<string, string>,
       });
@@ -177,7 +250,9 @@ const setupAuth = async () => {
         publishProcess.kill();
         resolve({
           error: new Error(
-            `publish command timed out after ${timeout} milliseconds`,
+            `publish command timed out after ${millisecondsToMinuets(
+              timeout,
+            )} minuets`,
           ),
         });
       }, timeout);
@@ -192,8 +267,7 @@ const setupAuth = async () => {
       let muteOutput = false;
       let unmuteMessage = '';
       let currentMessage = '';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const dataHandler = async (data: any) => {
+      const dataHandler = async (data: string | Buffer) => {
         if (!muteOutput) {
           process.stdout.write(data);
         } else if (currentMessage === unmuteMessage) {
@@ -243,14 +317,21 @@ const setupAuth = async () => {
 
     if (error) {
       await reportExitMessage(new WebClient(token), channelId, error.message);
+      if (revertCommand.command) {
+        await revertPublish(
+          revertCommand.command,
+          revertCommand.args,
+          timeout / 2,
+        );
+      }
       core.setFailed(error.message);
+    } else {
+      await reportExitMessage(
+        new WebClient(token),
+        channelId,
+        message || 'Done running publish command',
+      );
     }
-
-    await reportExitMessage(
-      new WebClient(token),
-      channelId,
-      error?.message || message || 'Done running publish command',
-    );
   } catch (error) {
     core.setFailed(error.message);
   }
