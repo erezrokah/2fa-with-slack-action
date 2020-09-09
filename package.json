@@ -23,7 +23,7 @@
     "preversion": "npm test",
     "version-dockerfile": "sed -i '' 's/\"version\"=\".*\"/\"version\"=\"'$npm_package_version'\"/' Dockerfile",
     "version": "auto-changelog -p --template keepachangelog && npm run version-dockerfile && git add .",
-    "postversion": "git push && git push --tags && gh-release",
+    "postversion": "git push && git push origin \"v$npm_package_version\" && gh-release",
     "test": "run-p lint format:ci"
   },
   "homepage": "https://github.com/erezrokah/2fa-with-slack-action#readme",
