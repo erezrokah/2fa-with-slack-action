@@ -23,4 +23,6 @@ jobs:
           PUBLISH_COMMAND: "npm\npublish"
           # pattern to match on publish command output when token is needed
           CODE_PATTERN: 'Enter OTP'
+          # (optional) line break separated list of command and args to run when the publish fails
+          REVERT_COMMAND: "git\nrevert\nHEAD"
 ```
