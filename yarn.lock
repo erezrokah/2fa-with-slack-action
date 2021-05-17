@@ -566,9 +566,9 @@ ajv@^6.10.0, ajv@^6.12.4:
     uri-js "^4.2.2"
 
 ajv@^8.0.1:
-  version "8.3.0"
-  resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.3.0.tgz#25ee7348e32cdc4a1dbb38256bf6bdc451dd577c"
-  integrity sha512-RYE7B5An83d7eWnDR8kbdaIFqmKCNsP16ay1hDbJEU+sa0e3H9SebskCt0Uufem6cfAVu7Col6ubcn/W+Sm8/Q==
+  version "8.4.0"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.4.0.tgz#48984fdb2ce225cab15795f0772a8d85669075e4"
+  integrity sha512-7QD2l6+KBSLwf+7MuYocbWvRPdOu63/trReTLu2KFwkgctnub1auoF+Y1WYcm09CTM7quuscrzqmASaLHC/K4Q==
   dependencies:
     fast-deep-equal "^3.1.1"
     json-schema-traverse "^1.0.0"
@@ -3152,9 +3152,9 @@ spdx-expression-parse@^3.0.0:
     spdx-license-ids "^3.0.0"
 
 spdx-license-ids@^3.0.0:
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/spdx-license-ids/-/spdx-license-ids-3.0.7.tgz#e9c18a410e5ed7e12442a549fbd8afa767038d65"
-  integrity sha512-U+MTEOO0AiDzxwFvoa4JVnMV6mZlJKk2sBLt90s7G0Gd0Mlknc7kxEn3nuDPNZRta7O2uy8oLcZLVT+4sqNZHQ==
+  version "3.0.8"
+  resolved "https://registry.yarnpkg.com/spdx-license-ids/-/spdx-license-ids-3.0.8.tgz#eb1e97ad99b11bf3f82a3b71a0472dd9a00f2ecf"
+  integrity sha512-NDgA96EnaLSvtbM7trJj+t1LUR3pirkDCcz9nOUlPb5DMBGsH7oES6C3hs3j7R9oHEa1EMvReS/BUAIT5Tcr0g==
 
 speedometer@~1.0.0:
   version "1.0.0"
@@ -3327,9 +3327,9 @@ supports-color@^7.1.0:
     has-flag "^4.0.0"
 
 table@^6.0.4:
-  version "6.7.0"
-  resolved "https://registry.yarnpkg.com/table/-/table-6.7.0.tgz#26274751f0ee099c547f6cb91d3eff0d61d155b2"
-  integrity sha512-SAM+5p6V99gYiiy2gT5ArdzgM1dLDed0nkrWmG6Fry/bUS/m9x83BwpJUOf1Qj/x2qJd+thL6IkIx7qPGRxqBw==
+  version "6.7.1"
+  resolved "https://registry.yarnpkg.com/table/-/table-6.7.1.tgz#ee05592b7143831a8c94f3cee6aae4c1ccef33e2"
+  integrity sha512-ZGum47Yi6KOOFDE8m223td53ath2enHcYLgOCjGr5ngu8bdIARQk6mN/wRMv4yMRcHnCSnHbCEha4sobQx5yWg==
   dependencies:
     ajv "^8.0.1"
     lodash.clonedeep "^4.5.0"
@@ -3471,9 +3471,9 @@ typescript@^4.0.0:
   integrity sha512-V+evlYHZnQkaz8TRBuxTA92yZBPotr5H+WhQ7bD3hZUndx5tGOa1fuCgeSjxAzM1RiN5IzvadIXTVefuuwZCRg==
 
 uglify-js@^3.1.4:
-  version "3.13.5"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.13.5.tgz#5d71d6dbba64cf441f32929b1efce7365bb4f113"
-  integrity sha512-xtB8yEqIkn7zmOyS2zUNBsYCBRhDkvlNxMMY2smuJ/qA8NCHeQvKCF3i9Z4k8FJH4+PJvZRtMrPynfZ75+CSZw==
+  version "3.13.6"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.13.6.tgz#6815ac7fdd155d03c83e2362bb717e5b39b74013"
+  integrity sha512-rRprLwl8RVaS+Qvx3Wh5hPfPBn9++G6xkGlUupya0s5aDmNjI7z3lnRLB3u7sN4OmbB0pWgzhM9BEJyiWAwtAA==
 
 unbox-primitive@^1.0.0:
   version "1.0.1"
