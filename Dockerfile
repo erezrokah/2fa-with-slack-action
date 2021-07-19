@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:12
+FROM mhart/alpine-node:16
 
 LABEL "com.github.actions.name"="2fa With Slack Action"
 LABEL "com.github.actions.description"="A GitHub Action to publish a package with 2FA authentication using Slack"
