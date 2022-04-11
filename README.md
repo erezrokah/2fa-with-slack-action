@@ -1,5 +1,10 @@
 # 2fa-with-slack-action
 
+## Deprecated ⚠️
+
+I recommend using [npm automation tokens](https://github.blog/changelog/2020-10-02-npm-automation-tokens/) or [Wombat Dressing Room](https://github.com/GoogleCloudPlatform/wombat-dressing-room) to automate publishing to `npm`. 
+
+
 ## Usage
 
 ```yaml
